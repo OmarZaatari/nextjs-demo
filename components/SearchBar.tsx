@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -9,15 +9,16 @@ interface SearchBarProps {
 
 export default function SearchBar({ onSearch, placeholder = "Search..." }: SearchBarProps) {
   const [query, setQuery] = useState('');
+  const onSearchRef = useRef(onSearch);
+  onSearchRef.current = onSearch;
 
   useEffect(() => {
-    // Debounce the search to avoid too many updates
     const timer = setTimeout(() => {
-      onSearch(query);
+      onSearchRef.current(query);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, onSearch]);
+  }, [query]);
 
   return (
     <div className="mb-8">

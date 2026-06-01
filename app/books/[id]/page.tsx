@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { getBookById, getAuthorById, getBooksByAuthorId } from '@/lib/data';
+import {
+  getBookById,
+  getAuthorById,
+  getBooksByAuthorId,
+  getPublisherById,
+} from '@/lib/data';
 import FavoriteButton from '@/components/FavoriteButton';
 
 export default async function BookPage({
@@ -17,6 +22,7 @@ export default async function BookPage({
   }
   
   const author = getAuthorById(book.authorId);
+  const publisher = getPublisherById(book.publisherId);
   const otherBooksByAuthor = getBooksByAuthorId(book.authorId).filter(
     b => b.id !== book.id
   );
@@ -52,10 +58,22 @@ export default async function BookPage({
           
           <Link 
             href={`/authors/${author?.id}`}
-            className="text-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 mb-4 inline-block"
+            className="text-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 mb-2 inline-block"
           >
             by {author?.name}
           </Link>
+
+          {publisher && (
+            <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              Published by{" "}
+              <Link
+                href={`/publishers/${publisher.id}`}
+                className="font-medium text-zinc-900 dark:text-zinc-50 hover:underline"
+              >
+                {publisher.name}
+              </Link>
+            </p>
+          )}
           
           <div className="mb-6">
             <FavoriteButton itemId={book.id} itemType="book" />

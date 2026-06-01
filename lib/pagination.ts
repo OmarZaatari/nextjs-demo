@@ -1,5 +1,8 @@
 export const BOOKS_PAGE_SIZE = 6;
 export const AUTHORS_PAGE_SIZE = 4;
+export const PUBLISHERS_PAGE_SIZE = 5;
+
+export type SortOrder = "asc" | "desc";
 
 export function parsePageParam(value: string | null | undefined): number {
   const parsed = Number.parseInt(value ?? "1", 10);
@@ -36,5 +39,32 @@ export function buildPageHref(
     search.set("page", String(page));
   }
   const query = search.toString();
+  return query ? `${basePath}?${query}` : basePath;
+}
+
+export function updateSearchParams(
+  base: URLSearchParams | string | undefined,
+  updates: Record<string, string | null | undefined>,
+): URLSearchParams {
+  const params = new URLSearchParams(
+    typeof base === "string" ? base : (base?.toString() ?? ""),
+  );
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === null || value === undefined || value === "") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+  }
+
+  return params;
+}
+
+export function buildQueryHref(
+  basePath: string,
+  params: URLSearchParams,
+): string {
+  const query = params.toString();
   return query ? `${basePath}?${query}` : basePath;
 }

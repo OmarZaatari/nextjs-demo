@@ -19,27 +19,41 @@ export function PageHeaderSkeleton() {
   );
 }
 
-export function BookGridSkeleton({ count = 6 }: { count?: number }) {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {Array.from({ length: count }).map((_, index) => (
-          <div
-            key={index}
-            className="bg-white dark:bg-zinc-900 rounded-lg shadow-md overflow-hidden"
-          >
-            <Skeleton className="h-80 w-full rounded-none" />
-            <div className="p-6 space-y-3">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <div className="flex justify-between pt-2">
-                <Skeleton className="h-6 w-24 rounded-full" />
-                <Skeleton className="h-4 w-12" />
-              </div>
+export function BookGridSkeleton({
+  count = 6,
+  embedded = false,
+}: {
+  count?: number;
+  embedded?: boolean;
+}) {
+  const grid = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="bg-white dark:bg-zinc-900 rounded-lg shadow-md overflow-hidden"
+        >
+          <Skeleton className="h-80 w-full rounded-none" />
+          <div className="p-6 space-y-3">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <div className="flex justify-between pt-2">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-4 w-12" />
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  if (embedded) {
+    return grid;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      {grid}
     </div>
   );
 }

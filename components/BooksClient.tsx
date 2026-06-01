@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SearchBar from './SearchBar';
 import Pagination from './Pagination';
+import { BookGridSkeleton } from '@/components/skeletons/Skeleton';
 import { Book, Author } from '@/lib/data';
 import {
   BOOKS_PAGE_SIZE,
@@ -13,6 +14,8 @@ import {
   paginate,
   parsePageParam,
 } from '@/lib/pagination';
+
+const FILTER_LOADING_MS = 350;
 
 interface BooksClientProps {
   initialBooks: Book[];
@@ -23,9 +26,27 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isResultsLoading, setIsResultsLoading] = useState(false);
+  const isInitialFilter = useRef(true);
 
   const selectedGenre = searchParams.get('genre') ?? 'all';
   const currentPage = parsePageParam(searchParams.get('page'));
+  const resultsKey = `${selectedGenre}-${currentPage}-${searchQuery}`;
+
+  const startResultsLoading = useCallback(() => {
+    setIsResultsLoading(true);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialFilter.current) {
+      isInitialFilter.current = false;
+      return;
+    }
+
+    setIsResultsLoading(true);
+    const timer = setTimeout(() => setIsResultsLoading(false), FILTER_LOADING_MS);
+    return () => clearTimeout(timer);
+  }, [resultsKey]);
 
   const navigateWithParams = useCallback(
     (params: URLSearchParams) => {
@@ -37,6 +58,7 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
 
   const handleGenreSelect = useCallback(
     (genre: string) => {
+      startResultsLoading();
       const params = new URLSearchParams(searchParams.toString());
       if (genre === 'all') {
         params.delete('genre');
@@ -46,14 +68,15 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
       params.delete('page');
       navigateWithParams(params);
     },
-    [searchParams, navigateWithParams],
+    [searchParams, navigateWithParams, startResultsLoading],
   );
 
   const handlePageChange = useCallback(
     (page: number) => {
+      startResultsLoading();
       router.replace(buildPageHref('/books', page, searchParams));
     },
-    [router, searchParams],
+    [router, searchParams, startResultsLoading],
   );
 
   const handleSearch = useCallback((query: string) => {
@@ -106,6 +129,7 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
 
       <SearchBar
         onSearch={handleSearch}
+        onQueryChange={startResultsLoading}
         placeholder="Search by title or author..."
       />
 
@@ -117,7 +141,8 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
               type="button"
               onClick={() => handleGenreSelect(genreOption)}
               aria-pressed={selectedGenre === genreOption}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              disabled={isResultsLoading}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors disabled:opacity-60 ${
                 selectedGenre === genreOption
                   ? 'bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900'
                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
@@ -130,12 +155,18 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
       </div>
 
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-        {totalItems === 0
-          ? 'No books found'
-          : `Showing ${rangeStart}–${rangeEnd} of ${totalItems} ${totalItems === 1 ? 'book' : 'books'}`}
+        {isResultsLoading
+          ? 'Loading results...'
+          : totalItems === 0
+            ? 'No books found'
+            : `Showing ${rangeStart}–${rangeEnd} of ${totalItems} ${totalItems === 1 ? 'book' : 'books'}`}
       </p>
 
-      {totalItems === 0 ? (
+      {isResultsLoading ? (
+        <div aria-busy="true" aria-label="Loading filtered books">
+          <BookGridSkeleton count={BOOKS_PAGE_SIZE} embedded />
+        </div>
+      ) : totalItems === 0 ? (
         <div className="text-center py-12">
           <p className="text-xl text-zinc-600 dark:text-zinc-400">
             No books found matching your criteria.

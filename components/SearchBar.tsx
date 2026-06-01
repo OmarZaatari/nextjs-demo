@@ -4,13 +4,25 @@ import { useState, useEffect, useRef } from 'react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  onQueryChange?: (query: string) => void;
   placeholder?: string;
 }
 
-export default function SearchBar({ onSearch, placeholder = "Search..." }: SearchBarProps) {
+export default function SearchBar({
+  onSearch,
+  onQueryChange,
+  placeholder = "Search...",
+}: SearchBarProps) {
   const [query, setQuery] = useState('');
   const onSearchRef = useRef(onSearch);
   onSearchRef.current = onSearch;
+  const onQueryChangeRef = useRef(onQueryChange);
+  onQueryChangeRef.current = onQueryChange;
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+    onQueryChangeRef.current?.(value);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,7 +38,7 @@ export default function SearchBar({ onSearch, placeholder = "Search..." }: Searc
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleQueryChange(e.target.value)}
           placeholder={placeholder}
           className="w-full px-4 py-3 pl-12 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400"
         />
@@ -45,7 +57,7 @@ export default function SearchBar({ onSearch, placeholder = "Search..." }: Searc
         </svg>
         {query && (
           <button
-            onClick={() => setQuery('')}
+            onClick={() => handleQueryChange('')}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -9,12 +9,14 @@ import {
   paginate,
   parsePageParam,
 } from '@/lib/pagination';
+import { fakeDelay } from '@/lib/delay';
 
 export default async function AuthorsPage({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  await fakeDelay();
   const { page: pageParam } = await searchParams;
   const currentPage = parsePageParam(pageParam);
   const authors = getAllAuthors();

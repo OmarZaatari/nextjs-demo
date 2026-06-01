@@ -4,8 +4,10 @@ import {
   getAllPublishers,
   getBooksByPublisherId,
 } from "@/lib/data";
+import { fakeDelay } from "@/lib/delay";
 
-export default function PublishersPage() {
+export default async function PublishersPage() {
+  await fakeDelay();
   const publishers = getAllPublishers().map((publisher) => ({
     id: publisher.id,
     name: publisher.name,

@@ -7,6 +7,7 @@ import {
   getBooksByAuthorId,
   getPublisherById,
 } from '@/lib/data';
+import { fakeDelay } from '@/lib/delay';
 import FavoriteButton from '@/components/FavoriteButton';
 
 export default async function BookPage({
@@ -14,6 +15,7 @@ export default async function BookPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await fakeDelay();
   const { id } = await params;
   const book = getBookById(parseInt(id));
   

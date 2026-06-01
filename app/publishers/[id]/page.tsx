@@ -3,16 +3,17 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   getAuthorById,
-  getBookById,
   getBooksByPublisherId,
   getPublisherById,
 } from "@/lib/data";
+import { fakeDelay } from "@/lib/delay";
 
 export default async function PublisherPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await fakeDelay();
   const { id } = await params;
   const publisher = getPublisherById(Number.parseInt(id, 10));
 
